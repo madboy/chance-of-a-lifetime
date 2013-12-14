@@ -1,11 +1,11 @@
-debug = false
+debug = true
 WIDTH = 100
 HEIGHT = 50
 
 function random_pos(w, h)
    local width = math.random(w)
    local height = math.random(h)
-   return height, width
+   return width, height
 end
 
 function random_genes()
@@ -16,11 +16,17 @@ function random_genes()
    return genes
 end
 
+function get_coord(c, r)
+   local x = 8*(c)
+   local y = 10*(r) + 100
+   return x, y
+end
+
 function make_animal()
    local animal = {}
-   local x,y = random_pos(WIDTH,HEIGHT)
-   animal["x"] = x
-   animal["y"] = y
+   local c,r = random_pos(WIDTH,HEIGHT)
+   animal["c"] = c
+   animal["r"] = r
    animal["energy"] = 1000
    animal["dir"] = 0
    animal["genes"] = random_genes
@@ -28,22 +34,34 @@ function make_animal()
 end
 
 function move_animal(animal)
-   print(animal.x, animal.y)
+   if debug then print("before:", animal.c, animal.r) end
    if animal.dir >= 2 and animal.dir < 5 then
-      animal.x = animal.x + 1
+      animal.c = animal.c + 1
    elseif animal.dir == 1 or animal.dir == 5 then
-      animal.x = animal.x
+      animal.c = animal.c
    else
-      animal.x = animal.x - 1
+      animal.c = animal.c - 1
    end
-   animal.x = (animal.x + WIDTH) % WIDTH
+   animal.c = (animal.c + WIDTH) % WIDTH
    if animal.dir >= 0 and animal.dir < 3 then
-      animal.y = animal.y - 1
+      animal.r = animal.r - 1
    elseif animal.dir >= 4 and animal.dir < 7 then
-      animal.y = animal.y + 1
+      animal.r = animal.r + 1
    end
-   animal.y = (animal.y + HEIGHT) % HEIGHT
-   print(animal.x, animal.y)
+   animal.r = (animal.r + HEIGHT) % HEIGHT
+   if debug then print("after:", animal.c, animal.r) end
+end
+
+function sum_genes(t)
+   sum = 0
+   for _,v in ipairs(t) do
+      sum = sum + v
+   end
+   return sum
+end
+
+function turn_animal(animal)
+   print(sum_genes(animal.genes))
 end
 
 function print_table(t)
@@ -53,35 +71,42 @@ function print_table(t)
 end
 
 function love.load()
+   game_clock = 0
    ground = {189, 183, 107}
+
+   plants = {}
    plant = {139, 0, 139}
-   world = {}
-   for r = 1,50 do
-      for c = 1,100 do
-         world[r..":"..c] = {x = 8*(c-1), y = 10*(r-1) + 100, c = ground}
-      end
+   for i = 1,10 do
+      c, r = random_pos(WIDTH, HEIGHT)
+      plants[c..":"..r] = {c = c, r = r}
    end
+
    jungles = {}
    jungle = {34, 139, 34}
    for r = 10,20 do
-      for c = 50,60 do
-	 jungles[r..":"..c] = {x = 8*(c-1), y = 10*(r-1) + 100, c = jungle}
-	 --world[r..":"..c].c = jungle
+      for c = 50, 60 do
+	 jungles[c..":"..r] = {c = c, r = r}
       end
    end
-   for i = 1,10 do
-      x,y = random_pos(100, 50)
-      world[x..":"..y].c = plant
+
+   animals = {}
+   animal = {255, 20, 147}
+   for i = 1,1 do
+      animals[#animals+1] = make_animal()
    end
-   animal = make_animal()
-   world[animal.x..":"..animal.y].c = {255,20,147}
 end
 
 function love.keypressed(key, unicode)
 end
 
 function love.update(dt)
-   move_animal(animal)
+   game_clock = game_clock + dt
+   if game_clock > 0.5 then
+      for _,v in ipairs(animals) do
+	 move_animal(v)
+      end
+      game_clock = 0
+   end
 end
 
 function love.draw()
@@ -101,19 +126,33 @@ function love.draw()
       love.graphics.print(i, 100*i, 50)
    end
 
-   -- draw the world
-   for r = 1,50 do
-      for c = 1,100 do
-	 -- if c % 2 == 0 then
-	 --    love.graphics.setColor(255,255,255)
-	 -- else
-	 --    love.graphics.setColor(0,255,0)
-	 -- end
-	 --love.graphics.rectangle("fill", 8*c, 10*r + 100, 8, 10)
-	 index = r..":"..c
-	 love.graphics.setColor(world[index].c)
-	 love.graphics.rectangle("fill", world[index].x, world[index].y, 8, 10)
-	 --love.graphics.rectangle("fill", 8*(c-1), 10*(r-1) + 100, 8, 10)
+   -- draw the ground
+   love.graphics.setColor(ground)
+   for r = 0, HEIGHT-1 do
+      for c = 0,WIDTH-1 do
+	 x,y = get_coord(c, r)
+	 love.graphics.rectangle("fill", x, y, 8, 10)
       end
+   end
+
+   -- draw the jungle
+   love.graphics.setColor(jungle)
+   for k in pairs(jungles) do
+      x,y = get_coord(jungles[k].c, jungles[k].r)
+      love.graphics.rectangle("fill", x, y, 8, 10)
+   end
+   
+   -- draw the plants
+   love.graphics.setColor(plant)
+   for k in pairs(plants) do
+      x,y = get_coord(plants[k].c, plants[k].r)
+      love.graphics.rectangle("fill", x, y, 8, 10)
+   end
+
+   -- draw the animals
+   love.graphics.setColor(animal)
+   for _,v in ipairs(animals) do
+      x, y = get_coord(v.c, v.r)
+      love.graphics.rectangle("fill", x, y, 8, 10)
    end
 end
