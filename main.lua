@@ -142,6 +142,14 @@ function add_plants()
    plants[c..":"..r] = {c = c, r = r}
 end
 
+function count_the_species(a)
+   population = {0,0,0,0,0,0,0,0}
+   for _,v in ipairs(a) do
+      population[v.species] = population[v.species] + 1
+   end
+   return population
+end
+
 function print_table(t)
    values = "["
    for _,v in ipairs(t) do
@@ -206,11 +214,13 @@ end
 
 function love.draw()
    -- draw the species
+   species_count = count_the_species(animals)
    for i=0,7 do
       love.graphics.setColor(COLORS[i+1])
       love.graphics.rectangle("fill", 100*i, 0, 100, 100)
       love.graphics.setColor(255,255,255)
-      love.graphics.print(i, 100*i, 50)
+      --love.graphics.print(i, 100*i, 50)
+      love.graphics.print(species_count[i+1], 100*i, 50)
    end
 
    -- draw the ground
