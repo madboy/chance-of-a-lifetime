@@ -2,9 +2,19 @@ debug = false
 paused = false
 WIDTH = 100
 HEIGHT = 50
-PLANT_ENERGY = 100
+PLANT_ENERGY = 80
 REPRODUCTION_ENERGY = 200
 GENES = 8
+COLORS = {{255,0,0},
+	  {0,255,0},
+	  {0,0,255},
+	  {120,0,0},
+	  {0,120,0},
+	  {0,0,120},
+	  {120,120,120},
+	  {255,255,0}}
+JUNGLE_START = {c = 20, r = 10}
+JUNGLE_SIZE = {w = 20, h = 20}
 
 function random_pos(w, h)
    local width = math.random(w)
@@ -35,9 +45,22 @@ function make_animal(species, energy)
    animal["dir"] = 0
    animal["genes"] = random_genes()
    animal["species"] = species
-   animal["color"] = {math.random(255), math.random(255), math.random(255)}
+   animal["color"] = COLORS[species]
    return animal
 end
+
+function clone_animal(animal)
+   local child = {}
+   child["c"] = animal.c
+   child["r"] = animal.r
+   child["energy"] = animal.energy
+   child["dir"] = 0
+   child["genes"] = animal.genes
+   child["species"] = animal.species
+   child["color"] = animal.color
+   return child
+end
+
 
 function move_animal(animal)
    if debug then print("before:", animal.c, animal.r) end
@@ -92,7 +115,7 @@ end
 
 function mutate_animal(animal)
    local gene = math.random(1,GENES)
-   animal.genes[gene] = animal.genes[gene] + math.random(-1,1)
+   animal.genes[gene] = math.max(1, animal.genes[gene] + math.random(-1,1))
 end
 
 function reproduce_animal(animal)
@@ -100,7 +123,7 @@ function reproduce_animal(animal)
       if debug then print("Getting a child") end
       animal.energy = animal.energy / 2
       if debug then print("Energy", animal.energy) end
-      child = make_animal("child", animal.energy)
+      child = clone_animal(animal)
       if debug then print_table(child.genes) end
       mutate_animal(child)
       if debug then print_table(child.genes) end
@@ -109,10 +132,14 @@ function reproduce_animal(animal)
 end
 
 function add_plants()
-   for i = 1,2 do
-      c, r = random_pos(WIDTH, HEIGHT)
-      plants[c..":"..r] = {c = c, r = r}
-   end
+   -- add plant in general area
+   c, r = random_pos(WIDTH, HEIGHT)
+   plants[c..":"..r] = {c = c, r = r}
+
+   -- add plant in jungle
+   c = math.random(JUNGLE_START.c, JUNGLE_SIZE.w + JUNGLE_START.c)
+   r = math.random(JUNGLE_START.r, JUNGLE_SIZE.h + JUNGLE_START.r)
+   plants[c..":"..r] = {c = c, r = r}
 end
 
 function print_table(t)
@@ -136,16 +163,18 @@ function love.load()
 
    jungles = {}
    jungle = {34, 139, 34}
-   for r = 10,20 do
-      for c = 50, 60 do
-	 jungles[c..":"..r] = {c = c, r = r}
+   for r = JUNGLE_START.r,JUNGLE_SIZE.h + JUNGLE_START.r do
+      for c = JUNGLE_START.c,JUNGLE_SIZE.w + JUNGLE_START.c do
+   -- for r = 10,20 do
+   --    for c = 50, 60 do
+   	 jungles[c..":"..r] = {c = c, r = r}
       end
    end
 
    animals = {}
    animal = {255, 20, 147}
-   for i = 1,1 do
-      animals[#animals+1] = make_animal("parent", 1000)
+   for i = 1,8 do
+      animals[#animals+1] = make_animal(i, 1000)
    end
 end
 
@@ -176,17 +205,9 @@ function love.update(dt)
 end
 
 function love.draw()
-   colors = {{255,0,0},
-	     {0,255,0},
-	     {0,0,255},
-	     {120,0,0},
-	     {0,120,0},
-	     {0,0,120},
-	     {120,120,120},
-	     {255,255,0}}
    -- draw the species
    for i=0,7 do
-      love.graphics.setColor(colors[i+1])
+      love.graphics.setColor(COLORS[i+1])
       love.graphics.rectangle("fill", 100*i, 0, 100, 100)
       love.graphics.setColor(255,255,255)
       love.graphics.print(i, 100*i, 50)
