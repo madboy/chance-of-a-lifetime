@@ -169,17 +169,14 @@ function love.load()
    end
    
    generation = 0
-   ground = {189, 183, 107}
 
    plants = {}
-   plant = {139, 0, 139}
    for i = 1,50 do
       c, r = random_pos(WIDTH, HEIGHT)
       plants[c..":"..r] = {c = c, r = r}
    end
 
    jungles = {}
-   jungle = {34, 139, 34}
    for r = JUNGLE_START.r,JUNGLE_SIZE.h + JUNGLE_START.r do
       for c = JUNGLE_START.c,JUNGLE_SIZE.w + JUNGLE_START.c do
    	 jungles[c..":"..r] = {c = c, r = r}
@@ -187,7 +184,6 @@ function love.load()
    end
 
    animals = {}
-   animal = {255, 20, 147}
    for i = 1,8 do
       table.insert(animals, make_animal(i, 1000))
    end
