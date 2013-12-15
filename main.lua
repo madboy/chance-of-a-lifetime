@@ -241,7 +241,6 @@ function love.draw()
       for c = 0,WIDTH-1 do
 	 x,y = get_coord(c, r)
 	 love.graphics.draw(imgs["ground"], x, y)
-	 --love.graphics.rectangle("fill", x, y, 8, 10)
       end
    end
 
@@ -250,7 +249,6 @@ function love.draw()
    for k in pairs(jungles) do
       x,y = get_coord(jungles[k].c, jungles[k].r)
       love.graphics.draw(imgs["jungle"], x, y)
-      --love.graphics.rectangle("fill", x, y, 8, 10)
    end
    
    -- draw the plants
@@ -258,14 +256,11 @@ function love.draw()
    for k in pairs(plants) do
       x,y = get_coord(plants[k].c, plants[k].r)
       love.graphics.draw(imgs["plant"], x, y)
-      --love.graphics.rectangle("fill", x, y, 8, 10)
    end
 
    -- draw the animals
-   --love.graphics.setColor(animal)
    love.graphics.setColor(255,255,255)
    for _,v in ipairs(animals) do
-      --love.graphics.setColor(v.color)
       x, y = get_coord(v.c, v.r)
       love.graphics.draw(imgs["animal_"..v.species], x, y)
    end
