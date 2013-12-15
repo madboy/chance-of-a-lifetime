@@ -27,7 +27,7 @@ end
 function random_genes()
    genes = {}
    for i = 1,GENES do
-      genes[#genes+1] = math.random(10)
+      table.insert(genes, math.random(10))
    end
    return genes
 end
@@ -129,7 +129,7 @@ function reproduce_animal(animal)
       if debug then print_table(child.genes) end
       mutate_animal(child)
       if debug then print_table(child.genes) end
-      animals[#animals+1] = child
+      table.insert(animals, child)
    end
 end
 
@@ -164,7 +164,7 @@ function love.load()
    math.randomseed(os.time())
 
    -- assets
-   imgf = {"mug_shot_1", "animal_1"}
+   imgf = {"mug_shot_1", "animal_1", "mug_shot_2", "animal_2", "animal_3", "animal_4", "animal_5", "animal_6", "animal_7", "animal_8", "plant"}
    imgs = {}
    for _,v in ipairs(imgf) do
       imgs[v] = love.graphics.newImage("assets/"..v..".png")
@@ -194,7 +194,7 @@ function love.load()
    animals = {}
    animal = {255, 20, 147}
    for i = 1,8 do
-      animals[#animals+1] = make_animal(i, 1000)
+      table.insert(animals, make_animal(i, 1000))
    end
 end
 
@@ -227,16 +227,17 @@ end
 function love.draw()
    -- draw the species
    species_count = count_the_species(animals)
-   for i=0,7 do
-      love.graphics.setColor(COLORS[i+1])
-      if i == 0 then
-	 love.graphics.draw(imgs["mug_shot_1"], 100*i, 0)
+   for i=1,8 do
+      love.graphics.setColor(COLORS[i])
+      if i < 3 then
+	 love.graphics.setColor(255,255,255)
+	 love.graphics.draw(imgs["mug_shot_"..i], 100*(i-1), 0)
       else
-	 love.graphics.rectangle("fill", 100*i, 0, 100, 100)
+	 love.graphics.rectangle("fill", 100*(i-1), 0, 100, 100)
       end
       --love.graphics.print(i, 100*i, 50)
       love.graphics.setColor(0, 0, 0)
-      love.graphics.print(species_count[i+1], 100*i, 50)
+      love.graphics.print(species_count[i], 100*(i-1), 50)
    end
 
    -- draw the ground
@@ -256,22 +257,20 @@ function love.draw()
    end
    
    -- draw the plants
-   love.graphics.setColor(plant)
+   love.graphics.setColor(255,255,255)
    for k in pairs(plants) do
       x,y = get_coord(plants[k].c, plants[k].r)
-      love.graphics.rectangle("fill", x, y, 8, 10)
+      love.graphics.draw(imgs["plant"], x, y)
+      --love.graphics.rectangle("fill", x, y, 8, 10)
    end
 
    -- draw the animals
    --love.graphics.setColor(animal)
+   love.graphics.setColor(255,255,255)
    for _,v in ipairs(animals) do
-      love.graphics.setColor(v.color)
+      --love.graphics.setColor(v.color)
       x, y = get_coord(v.c, v.r)
-      if v.species == 1 then
-	 love.graphics.draw(imgs["animal_1"], x, y)
-      else
-	 love.graphics.rectangle("fill", x, y, 8, 10)
-      end
+      love.graphics.draw(imgs["animal_"..v.species], x, y)
    end
 
    love.graphics.setColor(0,0,0)
