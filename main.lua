@@ -7,6 +7,7 @@ game_started = false
 WIDTH = 100
 HEIGHT = 50
 PLANT_ENERGY = 80
+ANIMAL_ENERGY = 100
 REPRODUCTION_ENERGY = 200
 GENES = 8
 JUNGLE_START = {c = 20, r = 10}
@@ -33,7 +34,16 @@ function get_coord(c, r)
    return x, y
 end
 
-function make_animal(species, energy)
+function create_id()
+   local id = ""
+   for i=1,20 do
+      local c = math.random(97,122)
+      id = id..string.char(c)
+   end
+   return id
+end
+
+function make_animal(species, energy, idx)
    local animal = {}
    local c,r = random_pos(WIDTH,HEIGHT)
    animal["c"] = c
@@ -42,10 +52,17 @@ function make_animal(species, energy)
    animal["dir"] = 0
    animal["genes"] = random_genes()
    animal["species"] = species
+   animal["index"] = idx
+   animal["id"] = create_id()
+   if species < 4 then
+      animal["herbivore"] = false
+   else
+      animal["herbivore"] = true
+   end
    return animal
 end
 
-function clone_animal(animal)
+function clone_animal(animal, idx)
    local child = {}
    child["c"] = animal.c
    child["r"] = animal.r
@@ -53,12 +70,29 @@ function clone_animal(animal)
    child["dir"] = 0
    child["genes"] = copy_table(animal.genes)
    child["species"] = animal.species
+   child["index"] = idx
+   child["id"] = create_id()
+   child["herbivore"] = animal.herbivore
    return child
 end
 
+function register_animal(animal)
+   local index = animal.c..":"..animal.r
+   if animal_positions[index] == nil then
+      animal_positions[index] = {}
+   end
+   local id = animal.id
+   animal_positions[index][id] = animal.index
+end
+
+function change_address(animal, old_pos)
+   local id = animal.id
+   animal_positions[old_pos][id] = nil
+   register_animal(animal)
+end
 
 function move_animal(animal)
-   if debug then print("before:", animal.c, animal.r) end
+   local pos = animal.c..":"..animal.r
    if animal.dir >= 2 and animal.dir < 5 then
       animal.c = animal.c + 1
    elseif animal.dir == 1 or animal.dir == 5 then
@@ -73,8 +107,12 @@ function move_animal(animal)
       animal.r = animal.r + 1
    end
    animal.r = (animal.r + HEIGHT) % HEIGHT
+   local new_pos = animal.c..":"..animal.r
+   if pos ~= new_pos then
+      change_address(animal, pos)
+   end
+   
    animal.energy = animal.energy - 1
-   if debug then print("after:", animal.c, animal.r) end
 end
 
 function sum_genes(t)
@@ -100,11 +138,22 @@ end
 
 function eat_animal(animal)
    local index = animal.c..":"..animal.r
-   if plants[index] ~= nil then
-      if debug then print("Woho, we have found food at", index) end
+   if animal.herbivore and plants[index] ~= nil then
       animal.energy = animal.energy + PLANT_ENERGY
       plants[index] = nil
-      if debug then print("New energy level is", animal.energy) end
+   end
+
+   if animal.herbivore == false then
+      local eaten = false
+      for v,k in pairs(animal_positions[index]) do
+	 if eaten == false and v ~= animal.id and animals[k] ~= nil and animals[k].herbivore then
+	    animal.energy = animal.energy + ANIMAL_ENERGY
+	    local prey = animals[k]
+	    animal_positions[prey.c..":"..prey.r][prey.id] = nil
+	    table.remove(animals, k)
+	    eaten = true
+	 end
+      end
    end
 end
 
@@ -115,14 +164,12 @@ end
 
 function reproduce_animal(animal)
    if animal.energy > REPRODUCTION_ENERGY then
-      if debug then print("Getting a child") end
       animal.energy = animal.energy / 2
-      if debug then print("Energy", animal.energy) end
-      child = clone_animal(animal)
-      if debug then print_table(child.genes) end
+      local idx = #animals + 1
+      child = clone_animal(animal, idx)
       mutate_animal(child)
-      if debug then print_table(child.genes) end
       table.insert(animals, child)
+      register_animal(child)
    end
 end
 
@@ -193,15 +240,20 @@ function love.load()
    end
 
    animals = {}
+   animal_positions = {}
    for i = 1,8 do
-      table.insert(animals, make_animal(i, 1000))
+      local idx = #animals + 1
+      local animal = make_animal(i, 1000, idx)
+      table.insert(animals, animal)
+      register_animal(animal)
    end
 end
 
 function love.keypressed(key, unicode)
    if key == "`" then
       --debug = not debug
-      print(inspect(animals))
+      --print(inspect(animals))
+      print(inspect(animal_positions))
    end
    if key == " " then
       paused = not paused
