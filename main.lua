@@ -164,7 +164,7 @@ function love.load()
    math.randomseed(os.time())
 
    -- assets
-   imgf = {"mug_shot_1", "animal_1", "mug_shot_2", "animal_2", "animal_3", "animal_4", "animal_5", "animal_6", "animal_7", "animal_8", "plant"}
+   imgf = {"mug_shot_1", "animal_1", "mug_shot_2", "animal_2", "mug_shot_3", "animal_3", "mug_shot_4", "animal_4", "mug_shot_5", "animal_5", "mug_shot_6", "animal_6", "mug_shot_7", "animal_7", "mug_shot_8", "animal_8", "plant", "jungle", "ground"}
    imgs = {}
    for _,v in ipairs(imgf) do
       imgs[v] = love.graphics.newImage("assets/"..v..".png")
@@ -225,35 +225,32 @@ function love.update(dt)
 end
 
 function love.draw()
+   love.graphics.setBackgroundColor(255,255,255)
    -- draw the species
    species_count = count_the_species(animals)
    for i=1,8 do
-      love.graphics.setColor(COLORS[i])
-      if i < 3 then
-	 love.graphics.setColor(255,255,255)
-	 love.graphics.draw(imgs["mug_shot_"..i], 100*(i-1), 0)
-      else
-	 love.graphics.rectangle("fill", 100*(i-1), 0, 100, 100)
-      end
-      --love.graphics.print(i, 100*i, 50)
+      love.graphics.setColor(255,255,255)
+      love.graphics.draw(imgs["mug_shot_"..i], 100*(i-1), 0)
       love.graphics.setColor(0, 0, 0)
-      love.graphics.print(species_count[i], 100*(i-1), 50)
+      love.graphics.print(species_count[i], 100*(i-1), 85)
    end
 
    -- draw the ground
-   love.graphics.setColor(ground)
+   love.graphics.setColor(255,255,255)
    for r = 0, HEIGHT-1 do
       for c = 0,WIDTH-1 do
 	 x,y = get_coord(c, r)
-	 love.graphics.rectangle("fill", x, y, 8, 10)
+	 love.graphics.draw(imgs["ground"], x, y)
+	 --love.graphics.rectangle("fill", x, y, 8, 10)
       end
    end
 
    -- draw the jungle
-   love.graphics.setColor(jungle)
+   love.graphics.setColor(255,255,255)
    for k in pairs(jungles) do
       x,y = get_coord(jungles[k].c, jungles[k].r)
-      love.graphics.rectangle("fill", x, y, 8, 10)
+      love.graphics.draw(imgs["jungle"], x, y)
+      --love.graphics.rectangle("fill", x, y, 8, 10)
    end
    
    -- draw the plants
