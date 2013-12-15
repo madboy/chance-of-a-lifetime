@@ -1,3 +1,4 @@
+local inspect = require('inspect')
 debug = false
 paused = true
 game_over = false
@@ -50,7 +51,7 @@ function clone_animal(animal)
    child["r"] = animal.r
    child["energy"] = animal.energy
    child["dir"] = 0
-   child["genes"] = animal.genes
+   child["genes"] = copy_table(animal.genes)
    child["species"] = animal.species
    return child
 end
@@ -146,6 +147,14 @@ function count_the_species(a)
    return population
 end
 
+function copy_table(t)
+   local new_t = {}
+   for _,v in ipairs(t) do
+      table.insert(new_t, v)
+   end
+   return new_t
+end
+
 function print_table(t)
    values = "["
    for _,v in ipairs(t) do
@@ -191,7 +200,8 @@ end
 
 function love.keypressed(key, unicode)
    if key == "`" then
-      debug = not debug
+      --debug = not debug
+      print(inspect(animals))
    end
    if key == " " then
       paused = not paused
