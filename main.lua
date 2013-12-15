@@ -1,5 +1,7 @@
 debug = false
 paused = false
+time_lapse = false
+
 WIDTH = 100
 HEIGHT = 50
 PLANT_ENERGY = 80
@@ -159,6 +161,18 @@ function print_table(t)
 end
 
 function love.load()
+   math.randomseed(os.time())
+
+   -- assets
+   imgf = {"mug_shot_1", "animal_1"}
+   imgs = {}
+   for _,v in ipairs(imgf) do
+      imgs[v] = love.graphics.newImage("assets/"..v..".png")
+   end
+   for _,v in ipairs(imgs) do
+      v:setFilter("nearest", "nearest")
+   end
+   
    generation = 0
    ground = {189, 183, 107}
 
@@ -173,8 +187,6 @@ function love.load()
    jungle = {34, 139, 34}
    for r = JUNGLE_START.r,JUNGLE_SIZE.h + JUNGLE_START.r do
       for c = JUNGLE_START.c,JUNGLE_SIZE.w + JUNGLE_START.c do
-   -- for r = 10,20 do
-   --    for c = 50, 60 do
    	 jungles[c..":"..r] = {c = c, r = r}
       end
    end
@@ -217,9 +229,13 @@ function love.draw()
    species_count = count_the_species(animals)
    for i=0,7 do
       love.graphics.setColor(COLORS[i+1])
-      love.graphics.rectangle("fill", 100*i, 0, 100, 100)
-      love.graphics.setColor(255,255,255)
+      if i == 0 then
+	 love.graphics.draw(imgs["mug_shot_1"], 100*i, 0)
+      else
+	 love.graphics.rectangle("fill", 100*i, 0, 100, 100)
+      end
       --love.graphics.print(i, 100*i, 50)
+      love.graphics.setColor(0, 0, 0)
       love.graphics.print(species_count[i+1], 100*i, 50)
    end
 
@@ -251,7 +267,11 @@ function love.draw()
    for _,v in ipairs(animals) do
       love.graphics.setColor(v.color)
       x, y = get_coord(v.c, v.r)
-      love.graphics.rectangle("fill", x, y, 8, 10)
+      if v.species == 1 then
+	 love.graphics.draw(imgs["animal_1"], x, y)
+      else
+	 love.graphics.rectangle("fill", x, y, 8, 10)
+      end
    end
 
    love.graphics.setColor(0,0,0)
