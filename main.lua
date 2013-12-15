@@ -1,22 +1,16 @@
 debug = false
-paused = false
-time_lapse = false
+paused = true
+game_over = false
+game_started = false
 
 WIDTH = 100
 HEIGHT = 50
 PLANT_ENERGY = 80
 REPRODUCTION_ENERGY = 200
 GENES = 8
-COLORS = {{255,0,0},
-	  {0,255,0},
-	  {0,0,255},
-	  {120,0,0},
-	  {0,120,0},
-	  {0,0,120},
-	  {120,120,120},
-	  {255,255,0}}
 JUNGLE_START = {c = 20, r = 10}
 JUNGLE_SIZE = {w = 20, h = 20}
+SPECIES_COUNT = {}
 
 function random_pos(w, h)
    local width = math.random(w)
@@ -47,7 +41,6 @@ function make_animal(species, energy)
    animal["dir"] = 0
    animal["genes"] = random_genes()
    animal["species"] = species
-   animal["color"] = COLORS[species]
    return animal
 end
 
@@ -59,7 +52,6 @@ function clone_animal(animal)
    child["dir"] = 0
    child["genes"] = animal.genes
    child["species"] = animal.species
-   child["color"] = animal.color
    return child
 end
 
@@ -135,8 +127,10 @@ end
 
 function add_plants()
    -- add plant in general area
-   c, r = random_pos(WIDTH, HEIGHT)
-   plants[c..":"..r] = {c = c, r = r}
+   for i=1,1 do
+      c, r = random_pos(WIDTH, HEIGHT)
+      plants[c..":"..r] = {c = c, r = r}
+   end
 
    -- add plant in jungle
    c = math.random(JUNGLE_START.c, JUNGLE_SIZE.w + JUNGLE_START.c)
@@ -162,6 +156,7 @@ end
 
 function love.load()
    math.randomseed(os.time())
+   selection = 1
 
    -- assets
    imgf = {"mug_shot_1", "animal_1", "mug_shot_2", "animal_2", "mug_shot_3", "animal_3", "mug_shot_4", "animal_4", "mug_shot_5", "animal_5", "mug_shot_6", "animal_6", "mug_shot_7", "animal_7", "mug_shot_8", "animal_8", "plant", "jungle", "ground"}
@@ -205,11 +200,24 @@ function love.keypressed(key, unicode)
    if key == " " then
       paused = not paused
    end
+   if key == "right" and game_started ~= true then
+      selection = selection + 1
+      selection = math.min(selection, 8)
+   end
+   if key == "left" and game_started ~= true then
+      selection = selection - 1
+      selection = math.max(selection, 1)
+   end
 end
 
 function love.update(dt)
-   if paused then return end
+   if paused or game_over then return end
    generation = generation + 1
+
+   if SPECIES_COUNT[selection] == 0 then
+      game_over = true
+   end
+   
    if debug then print("Number of animals", #animals) end
    for i,v in ipairs(animals) do
       if v.energy <= 0 then
@@ -222,17 +230,21 @@ function love.update(dt)
       reproduce_animal(v)
    end
    add_plants()
+   game_started = true
 end
 
 function love.draw()
    love.graphics.setBackgroundColor(255,255,255)
    -- draw the species
-   species_count = count_the_species(animals)
+   love.graphics.setColor(135,135,135)
+   love.graphics.rectangle("fill", 100*(selection-1), 0, 100, 100)
+
+   SPECIES_COUNT = count_the_species(animals)
    for i=1,8 do
       love.graphics.setColor(255,255,255)
       love.graphics.draw(imgs["mug_shot_"..i], 100*(i-1), 0)
       love.graphics.setColor(0, 0, 0)
-      love.graphics.print(species_count[i], 100*(i-1), 85)
+      love.graphics.print(SPECIES_COUNT[i], 100*(i-1)+10, 85)
    end
 
    -- draw the ground
@@ -267,4 +279,15 @@ function love.draw()
 
    love.graphics.setColor(0,0,0)
    love.graphics.print("Generation: "..generation, 0, 100)
+
+   if game_started == false then
+      love.graphics.setColor(255,0,22)
+      love.graphics.print("Select your species by using the arrow keys", 400, 400)
+      love.graphics.print("Start the game by pressing space", 400, 415)
+   end
+
+   if game_over then
+      love.graphics.setColor(0,0,0)
+      love.graphics.print("GAME OVER", 400, 400)
+   end
 end
