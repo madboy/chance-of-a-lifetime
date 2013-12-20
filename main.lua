@@ -4,8 +4,6 @@ local settings = require('settings')
 local utils = require('utils')
 local world = require('world')
 
-JUNGLE_START = {c = 20, r = 10}
-JUNGLE_SIZE = {w = 20, h = 20}
 SPECIES_COUNT = {}
 
 function random_genes()
@@ -146,19 +144,6 @@ function reproduce_animal(animal)
    end
 end
 
--- function add_plants()
---    -- add plant in general area
---    for i=1,1 do
---       c, r = utils.random_pos(settings.width, settings.height)
---       plants[c..":"..r] = {c = c, r = r}
---    end
-
---    -- add plant in jungle
---    c = math.random(JUNGLE_START.c, JUNGLE_SIZE.w + JUNGLE_START.c)
---    r = math.random(JUNGLE_START.r, JUNGLE_SIZE.h + JUNGLE_START.r)
---    plants[c..":"..r] = {c = c, r = r}
--- end
-
 function count_the_species(a)
    population = {0,0,0,0,0,0,0,0}
    for _,v in ipairs(a) do
@@ -166,14 +151,6 @@ function count_the_species(a)
    end
    return population
 end
-
--- function copy_table(t)
---    local new_t = {}
---    for _,v in ipairs(t) do
---       table.insert(new_t, v)
---    end
---    return new_t
--- end
 
 function love.load()
    math.randomseed(os.time())
@@ -197,12 +174,6 @@ function love.load()
       plants[c..":"..r] = {c = c, r = r}
    end
 
-   -- jungles = {}
-   -- for r = JUNGLE_START.r,JUNGLE_SIZE.h + JUNGLE_START.r do
-   --    for c = JUNGLE_START.c,JUNGLE_SIZE.w + JUNGLE_START.c do
-   -- 	 jungles[c..":"..r] = {c = c, r = r}
-   --    end
-   -- end
    jungle = world.create_jungle()
 
    animals = {}
@@ -219,7 +190,7 @@ function love.keypressed(key, unicode)
    if key == "`" then
       --debug = not debug
       print(inspect(animals))
-      print(inspect(animal_positions))
+      --print(inspect(animal_positions))
    end
    if key == " " then
       settings.paused = not settings.paused
@@ -237,10 +208,6 @@ end
 function love.update(dt)
    if settings.paused or settings.game_over then return end
    generation = generation + 1
-
-   -- if SPECIES_COUNT[selection] == 0 then
-   --    settings.game_over = true
-   -- end
 
    if settings.debug then print("Number of animals", #animals) end
    for i,v in ipairs(animals) do
@@ -282,10 +249,6 @@ function love.draw()
 
    -- draw the jungle
    love.graphics.setColor(255,255,255)
-   -- for k in pairs(jungles) do
-   --    x,y = utils.get_coord(jungles[k].c, jungles[k].r)
-   --    love.graphics.draw(imgs["jungle"], x, y)
-   -- end
 
    for _,v in ipairs(jungle) do
       local x, y = utils.get_coord(v[1], v[2])
@@ -314,9 +277,4 @@ function love.draw()
       love.graphics.print("Select your species by using the arrow keys", 400, 400)
       love.graphics.print("Start the game by pressing space", 400, 415)
    end
-
-   -- if settings.game_over then
-   --    love.graphics.setColor(0,0,0)
-   --    love.graphics.print("GAME OVER", 400, 400)
-   -- end
 end

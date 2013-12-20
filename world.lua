@@ -16,7 +16,7 @@ end
 
 function world.create_jungle()
     local jungle = {}
-    for i=1,50 do
+    for i=1,400 do
         local c,r = utils.random_pos(settings.width, settings.height)
         table.insert(jungle, {c, r})
     end
