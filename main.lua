@@ -47,21 +47,6 @@ function clone_animal(animal, idx)
    return child
 end
 
-function register_animal(animal)
-   local index = animal.c..":"..animal.r
-   if animal_positions[index] == nil then
-      animal_positions[index] = {}
-   end
-   local id = animal.id
-   animal_positions[index][id] = animal.index
-end
-
-function change_address(animal, old_pos)
-   local id = animal.id
-   animal_positions[old_pos][id] = nil
-   register_animal(animal)
-end
-
 function move_animal(animal)
    local pos = animal.c..":"..animal.r
    if animal.dir >= 2 and animal.dir < 5 then
@@ -80,7 +65,7 @@ function move_animal(animal)
    animal.r = (animal.r + settings.height) % settings.height
    local new_pos = animal.c..":"..animal.r
    if pos ~= new_pos then
-      change_address(animal, pos)
+      world.change_registration(animal, pos, animal_positions)
    end
 
    animal.energy = animal.energy - 1
@@ -120,7 +105,7 @@ function eat_animal(animal)
 	 if eaten == false and v ~= animal.id and animals[k] ~= nil and animals[k].herbivore then
 	    animal.energy = animal.energy + settings.animal_energy
 	    local prey = animals[k]
-	    animal_positions[prey.c..":"..prey.r][prey.id] = nil
+       world.deregister_animal(animal, animal_positions)
 	    table.remove(animals, k)
 	    eaten = true
 	 end
@@ -140,7 +125,7 @@ function reproduce_animal(animal)
       child = clone_animal(animal, idx)
       mutate_animal(child)
       table.insert(animals, child)
-      register_animal(child)
+      world.register_animal(child, animal_positions)
    end
 end
 
@@ -168,11 +153,7 @@ function love.load()
 
    generation = 0
 
-   plants = {}
-   for i = 1,50 do
-      c, r = utils.random_pos(settings.width, settings.height)
-      plants[c..":"..r] = {c = c, r = r}
-   end
+   plants = world.create_plants()
 
    jungle = world.create_jungle()
 
@@ -182,7 +163,7 @@ function love.load()
       local idx = #animals + 1
       local animal = make_animal(i, 1000, idx)
       table.insert(animals, animal)
-      register_animal(animal)
+      world.register_animal(animal, animal_positions)
    end
 end
 
