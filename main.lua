@@ -101,11 +101,6 @@ function eat_animal(animal)
    end
 end
 
-function mutate_animal(animal)
-   local gene = math.random(1,settings.genes)
-   animal.genes[gene] = math.max(1, animal.genes[gene] + math.random(-1,1))
-end
-
 function reproduce_animal(a)
    local child = animal.reproduce(a)
    if child then
@@ -171,8 +166,8 @@ function love.update(dt)
    if settings.debug then print("Number of animals", #animals) end
    for i,v in ipairs(animals) do
       if v.energy <= 0 then
-	 table.remove(animals, i)
-	 if settings.debug then print("Removing an animal, population down to", #animals) end
+         table.remove(animals, i)
+         if settings.debug then print("Removing an animal, population down to", #animals) end
       end
       move_animal(v)
       turn_animal(v)
@@ -229,7 +224,7 @@ function love.draw()
    end
 
    love.graphics.setColor(0,0,0)
-   love.graphics.print("Generation: "..generation, 0, 100)
+   love.graphics.print("Tick: "..generation, 0, 100)
 
    if settings.game_started == false then
       love.graphics.setColor(255,0,22)

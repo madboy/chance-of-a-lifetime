@@ -22,6 +22,11 @@ function animal.make()
     return a
 end
 
+local function mutate(a)
+    local gene = math.random(1, settings.genes)
+    a.genes[gene] = math.max(1, a.genes[gene] + math.random(-1,1))
+end
+
 function animal.clone(a)
     local child = {}
     for k,v in pairs(a) do
@@ -29,7 +34,7 @@ function animal.clone(a)
     end
     child.genes = utils.copy_table(a.genes)
     child.id = utils.create_id()
-    animal.mutate(child)
+    mutate(child)
     return child
 end
 
@@ -41,11 +46,6 @@ function animal.reproduce(a)
     else
         return nil
     end
-end
-
-function animal.mutate(a)
-    local gene = math.random(1, settings.genes)
-    a.genes[gene] = math.max(1, a.genes[gene] + math.random(-1,1))
 end
 
 function animal.register(animal)
