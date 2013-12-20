@@ -3,6 +3,7 @@ local inspect = require('inspect')
 local settings = require('settings')
 local utils = require('utils')
 local world = require('world')
+local animal = require('animal')
 
 SPECIES_COUNT = {}
 
@@ -20,6 +21,7 @@ function make_animal(species, energy, idx)
    animal["c"] = c
    animal["r"] = r
    animal["energy"] = energy
+   animal["reproduction_energy"] = settings.reproduction_energy
    animal["dir"] = 0
    animal["genes"] = random_genes()
    animal["species"] = species
@@ -31,20 +33,6 @@ function make_animal(species, energy, idx)
       animal["herbivore"] = true
    end
    return animal
-end
-
-function clone_animal(animal, idx)
-   local child = {}
-   child["c"] = animal.c
-   child["r"] = animal.r
-   child["energy"] = animal.energy
-   child["dir"] = 0
-   child["genes"] = utils.copy_table(animal.genes)
-   child["species"] = animal.species
-   child["index"] = idx
-   child["id"] = utils.create_id()
-   child["herbivore"] = animal.herbivore
-   return child
 end
 
 function move_animal(animal)
@@ -118,12 +106,10 @@ function mutate_animal(animal)
    animal.genes[gene] = math.max(1, animal.genes[gene] + math.random(-1,1))
 end
 
-function reproduce_animal(animal)
-   if animal.energy > settings.reproduction_energy then
-      animal.energy = animal.energy / 2
-      local idx = #animals + 1
-      child = clone_animal(animal, idx)
-      mutate_animal(child)
+function reproduce_animal(a)
+   local child = animal.reproduce(a)
+   if child then
+      child.index = #animals + 1
       table.insert(animals, child)
       world.register_animal(child, animal_positions)
    end
