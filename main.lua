@@ -115,14 +115,6 @@ function reproduce_animal(a)
    end
 end
 
-function count_the_species(a)
-   population = {0,0,0,0,0,0,0,0}
-   for _,v in ipairs(a) do
-      population[v.species] = population[v.species] + 1
-   end
-   return population
-end
-
 function love.load()
    math.randomseed(os.time())
    selection = 1
@@ -197,7 +189,7 @@ function love.draw()
    love.graphics.setColor(135,135,135)
    love.graphics.rectangle("fill", 100*(selection-1), 0, 100, 100)
 
-   SPECIES_COUNT = count_the_species(animals)
+   SPECIES_COUNT = world.count_species(animals)
    for i=1,8 do
       love.graphics.setColor(255,255,255)
       love.graphics.draw(imgs["mug_shot_"..i], 100*(i-1), 0)

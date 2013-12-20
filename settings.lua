@@ -23,4 +23,5 @@ settings.herbivores = {'sheep', 'cow', 'pig', 'giraffe', 'turtle'}
 settings.herbivore_energy = 1000
 settings.herbivore_energy = 200
 
+settings.species = #settings.herbivores + #settings.carnivores
 return settings

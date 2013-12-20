@@ -50,4 +50,15 @@ function world.change_registration(a, from, register)
     world.register_animal(a, register)
 end
 
+function world.count_species(animals)
+    local population = {}
+    for i=1,settings.species do
+        population[i] = 0
+    end
+    for _,v in ipairs(animals) do
+        population[v.species] = population[v.species] + 1
+    end
+    return population
+end
+
 return world
