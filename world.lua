@@ -37,16 +37,19 @@ function world.register_animal(a, register)
    if register[index] == nil then
       register[index] = {}
    end
-   register[index][a.id] = a.index
+   table.insert(register[index], a.id)
 end
 
-function world.deregister_animal(a, register)
-    local index = a.c..":"..a.r
-    register[index][a.id] = nil
+function world.deregister_animal(id, index, register)
+    for i,v in ipairs(register[index]) do
+        if v == id then
+            table.remove(register[index], i)
+        end
+    end
 end
 
 function world.change_registration(a, from, register)
-    register[from][a.id] = nil
+    world.deregister_animal(a.id, from, register)
     world.register_animal(a, register)
 end
 
@@ -55,7 +58,7 @@ function world.count_species(animals)
     for i=1,settings.species do
         population[i] = 0
     end
-    for _,v in ipairs(animals) do
+    for k,v in pairs(animals) do
         population[v.species] = population[v.species] + 1
     end
     return population

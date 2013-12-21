@@ -2,6 +2,9 @@ animal = {}
 
 local utils = require('utils')
 local settings = require('settings')
+local world = require('world')
+local carnivore = require('carnivore')
+local herbivore = require('herbivore')
 
 local function random_genes()
     local genes = {}
@@ -38,37 +41,34 @@ function animal.clone(a)
     return child
 end
 
-function animal.reproduce(a)
+function animal.reproduce(a, animals, animal_positions)
     if a.energy > a.reproduction_energy then
         a.energy = a.energy / 2
         local child = animal.clone(a)
-        return child
-    else
-        return nil
+        -- child.index = #animals + 1
+        animals[child.id] = child
+        -- table.insert(animals, child)
+        world.register_animal(child, animal_positions)
     end
 end
 
-function animal.register(animal)
-    -- body
-end
-
-function animal.change_address(animal, old_pos)
-    -- body
+local function sum_genes(t)
 end
 
 function animal.move(animal)
     -- body
 end
 
-local function sum_genes(t)
-end
-
 function animal.turn(animal)
     -- body
 end
 
-function animal.eat(animal)
-    -- body
+function animal.eat(a, plants, animals, animal_positions)
+    if a.herbivore then
+        herbivore.eat(a, plants)
+    else
+        carnivore.eat(a, animals, animal_positions)
+    end
 end
 
 function animal.count_species(animals)

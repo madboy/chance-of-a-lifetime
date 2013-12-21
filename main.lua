@@ -15,7 +15,7 @@ function random_genes()
    return genes
 end
 
-function make_animal(species, energy, idx)
+function make_animal(species, energy)
    local animal = {}
    local c,r = utils.random_pos(settings.width,settings.height)
    animal["c"] = c
@@ -25,7 +25,6 @@ function make_animal(species, energy, idx)
    animal["dir"] = 0
    animal["genes"] = random_genes()
    animal["species"] = species
-   animal["index"] = idx
    animal["id"] = utils.create_id()
    if species < 4 then
       animal["herbivore"] = false
@@ -80,36 +79,6 @@ function turn_animal(animal)
    end
 end
 
-function eat_animal(animal)
-   local index = animal.c..":"..animal.r
-   if animal.herbivore and plants[index] ~= nil then
-      animal.energy = animal.energy + settings.plant_energy
-      plants[index] = nil
-   end
-
-   if animal.herbivore == false then
-      local eaten = false
-      for v,k in pairs(animal_positions[index]) do
-	 if eaten == false and v ~= animal.id and animals[k] ~= nil and animals[k].herbivore then
-	    animal.energy = animal.energy + settings.animal_energy
-	    local prey = animals[k]
-       world.deregister_animal(animal, animal_positions)
-	    table.remove(animals, k)
-	    eaten = true
-	 end
-      end
-   end
-end
-
-function reproduce_animal(a)
-   local child = animal.reproduce(a)
-   if child then
-      child.index = #animals + 1
-      table.insert(animals, child)
-      world.register_animal(child, animal_positions)
-   end
-end
-
 function love.load()
    math.randomseed(os.time())
    selection = 1
@@ -133,9 +102,10 @@ function love.load()
    animals = {}
    animal_positions = {}
    for i = 1,8 do
-      local idx = #animals + 1
-      local animal = make_animal(i, 1000, idx)
-      table.insert(animals, animal)
+      -- local idx = #animals + 1
+      local animal = make_animal(i, 1000)
+      animals[animal.id] = animal
+      -- table.insert(animals, animal)
       world.register_animal(animal, animal_positions)
    end
 end
@@ -164,15 +134,16 @@ function love.update(dt)
    generation = generation + 1
 
    if settings.debug then print("Number of animals", #animals) end
-   for i,v in ipairs(animals) do
+   for k,v in pairs(animals) do
       if v.energy <= 0 then
-         table.remove(animals, i)
+         world.deregister_animal(v.id, v.c..":"..v.r, animal_positions)
+         animals[v.id] = nil
          if settings.debug then print("Removing an animal, population down to", #animals) end
       end
       move_animal(v)
       turn_animal(v)
-      eat_animal(v)
-      reproduce_animal(v)
+      animal.eat(v, plants, animals, animal_positions)
+      animal.reproduce(v, animals, animal_positions)
    end
    world.add_plants(plants, jungle)
    settings.game_started = true
@@ -218,7 +189,7 @@ function love.draw()
 
    -- draw the animals
    love.graphics.setColor(255,255,255)
-   for _,v in ipairs(animals) do
+   for k,v in pairs(animals) do
       x, y = utils.get_coord(v.c, v.r)
       love.graphics.draw(imgs["animal_"..v.species], x, y)
    end
